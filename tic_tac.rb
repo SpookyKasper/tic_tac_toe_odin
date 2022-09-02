@@ -1,4 +1,3 @@
-
 class Player
   attr_accessor :times_played
 
@@ -8,19 +7,26 @@ class Player
     @times_played = 0
   end
 
+  def valid_input?(input)
+    (1..3).include?(input)
+  end
+
+  def slot_is_free?(board, row, column)
+    board[row - 1][column - 1].nil?
+  end
+
   def play(board, row, column)
-    if (1..3).include?(row) && (1..3).include?(column)
-      if board[row - 1][column - 1] != nil
-        puts "Sorry bro this slot is already taken!"
-      else
+    if valid_input?(row) && valid_input?(column)
+      if slot_is_free?(board, row, column)
         board[row - 1][column - 1] = @symbol
         @times_played += 1
+      else
+        puts 'Sorry bro this slot is already taken!'
       end
     else
       puts "There's only 3 rows and columns honey..."
-      puts "Please type a number between 1 and 3"
+      puts 'Please type a number between 1 and 3'
     end
-    board
   end
 end
 
@@ -31,7 +37,7 @@ class Board
   def initialize(rows, columns)
     @rows = rows
     @columns = columns
-    @board = Array.new(rows){Array.new(columns)}
+    @board = Array.new(rows) { Array.new(columns) }
     @some_player_won = false
     @is_full = false
   end
@@ -42,9 +48,15 @@ class Board
     end
   end
 
+  def this_player_won(player)
+    @some_player_won = true
+    self.display_board
+    puts "#{player} wins!"
+  end
+
   def check_for_victory
     @board.transpose.each do |col|
-      if col.join == "XXX"
+  f    if col.join == "XXX"
         @some_player_won = true
         self.display_board
         puts "Player 1 wins!"
@@ -87,7 +99,6 @@ class Board
         self.display_board
         puts "Player 2 wins!"
       end
-
   end
 
   def get_second_diagonale
@@ -107,7 +118,6 @@ class Board
   end
 end
 
-class Gamed
 player1 = Player.new("Player1", "X")
 player2 = Player.new("Player2", "O")
 tic_board = Board.new(3,3)
