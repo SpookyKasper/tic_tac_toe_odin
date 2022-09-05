@@ -7,136 +7,117 @@ class Player
     @times_played = 0
   end
 
-  def valid_input?(input)
-    (1..3).include?(input)
-  end
-
-  def slot_is_free?(board, row, column)
-    board[row - 1][column - 1].nil?
+  def valid_input?(row, column)
+    (1..3).include?(row) && (1..3).include?(column)
   end
 
   def play(board, row, column)
-    if valid_input?(row) && valid_input?(column)
-      if slot_is_free?(board, row, column)
+    if valid_input?(row, column)
+      if board[row - 1][column - 1].nil?
         board[row - 1][column - 1] = @symbol
         @times_played += 1
       else
-        puts 'Sorry bro this slot is already taken!'
+        puts 'Sorry honey this slot is taken already...'
       end
     else
-      puts "There's only 3 rows and columns honey..."
-      puts 'Please type a number between 1 and 3'
+      puts 'Hoo darling, please type a number between 1 and 3...'
     end
   end
 end
 
 class Board
   attr_accessor :board
-  attr_reader :some_player_won, :is_full
+  attr_reader :game_over
 
   def initialize(rows, columns)
     @rows = rows
     @columns = columns
     @board = Array.new(rows) { Array.new(columns) }
-    @some_player_won = false
-    @is_full = false
+    @game_over = false
   end
 
   def display_board
     @board.each do |row|
-    p row
+      p row
     end
   end
 
-  def this_player_won(player)
-    @some_player_won = true
-    self.display_board
-    puts "#{player} wins!"
+  def game_over_message(message)
+    @game_over = true
+    display_board
+    puts message
   end
 
-  def check_for_victory
+  def columns_values
+    columns = []
     @board.transpose.each do |col|
-  f    if col.join == "XXX"
-        @some_player_won = true
-        self.display_board
-        puts "Player 1 wins!"
-      elsif col.join == "OOO"
-        @some_player_won = true
-        self.display_board
-        puts "Player 2 wins!"
-      end
+      columns << col.join
     end
+    columns
+  end
+
+  def rows_values
+    rows = []
     @board.each do |row|
-      if row.join == "XXX"
-        @some_player_won = true
-        self.display_board
-        puts "Player 1 wins!"
-      elsif row.join == "OOO"
-        @some_player_won = true
-        self.display_board
-        puts "Player 2 wins!"
-      end
+      rows << row.join
     end
-   @board.each_with_index.reduce([]) do |memo, (row, index)|
-      memo << row[index]
-      if memo.join == "XXX"
-        @some_player_won = true
-        self.display_board
-        puts "Player 1 wins!"
-      elsif memo.join == "OOO"
-        @some_player_won = true
-        self.display_board
-        puts "Player 2 wins!"
-      end
-      memo
-    end
-      if get_second_diagonale.join == "XXX"
-        @some_player_won = true
-        self.display_board
-        puts "Player 1 wins!"
-      elsif get_second_diagonale.join == "OOO"
-        @some_player_won = true
-        self.display_board
-        puts "Player 2 wins!"
-      end
+    rows
   end
 
-  def get_second_diagonale
-    diago = []
-    diago << @board[0][2]
-    diago << @board[1][1]
-    diago << @board[2][0]
-    diago
+  def diagonal1
+    column = 0
+    @board.each_with_object([]) do |row, array|
+      array << row[column]
+      column += 1
+    end
   end
 
-  def check_for_tie
-    if @board.join.length == (@rows * @columns)  && !self.some_player_won
-    @is_full = true
-      self.display_board
-      puts "It's a tie!"
+  def diagonal2
+    column = 2
+    @board.each_with_object([]) do |row, array|
+      array << row[column]
+      column -= 1
+    end
+  end
+
+  def board_values
+    board_values = []
+    board_values << columns_values
+    board_values << rows_values
+    board_values << diagonal1.join
+    board_values << diagonal2.join
+    board_values.flatten
+  end
+
+  def game_over?
+    if board_values.include?('XXX')
+      game_over_message('Congratulations player1 you won!!!')
+    elsif board_values.include?('OOO')
+      game_over_message('Congratulations player2 you won!!!')
+    elsif @board.join.length == (@rows * @columns)
+      game_over_message("Well done babes! it's a tie!!!")
     end
   end
 end
 
-player1 = Player.new("Player1", "X")
-player2 = Player.new("Player2", "O")
-tic_board = Board.new(3,3)
+player1 = Player.new('Player 1', 'X')
+player2 = Player.new('Player 2', 'O')
+tic_board = Board.new(3, 3)
 
-while(!tic_board.some_player_won && !tic_board.is_full)
+until tic_board.game_over
   tic_board.display_board
   if player1.times_played == player2.times_played
-    puts "Hey Player1 which row do you wanna play ?"
+    puts 'Hey Player1 which row do you wanna play ?'
     row = gets.to_i
-    puts "And on which column ?"
+    puts 'And on which column ?'
     column = gets.to_i
     player1.play(tic_board.board, row, column)
-  elsif player1.times_played > player2.times_played
-    puts "Hey Player2 which row do you wanna play ?"
+  else
+    puts 'Hey Player2 which row do you wanna play ?'
     row = gets.to_i
-    puts "And on which column ?"
+    puts 'And on which column ?'
     column = gets.to_i
     player2.play(tic_board.board, row, column)
   end
-  tic_board.check_for_tie
-  tic_board.check_for_victory
+  tic_board.game_over?
 end
