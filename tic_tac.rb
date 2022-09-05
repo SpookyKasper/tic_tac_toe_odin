@@ -1,6 +1,6 @@
 class Player
   attr_accessor :times_played
-  attr_reader :name
+  attr_reader :name, :symbol
 
   def initialize(name, symbol)
     @name = name
@@ -13,9 +13,11 @@ class Player
   end
 
   def play(board, slot)
-    if valid_input?(slot[0], slot[1])
-      if board[slot[0]][slot[1]].nil?
-        board[slot[0]][slot[1]] = @symbol
+    row = slot[0]
+    column = slot[1]
+    if valid_input?(row, column)
+      if board[row][column].nil?
+        board[row][column] = @symbol
         @times_played += 1
       else
         puts 'Sorry honey this slot is taken already...'
@@ -28,7 +30,7 @@ end
 
 class Board
   attr_accessor :board
-  attr_reader :game_over
+  attr_reader :rows, :columns
 
   def initialize(rows, columns)
     @rows = rows
@@ -41,12 +43,6 @@ class Board
     @board.each do |row|
       p row
     end
-  end
-
-  def game_over_message(message)
-    @game_over = true
-    display_board
-    puts message
   end
 
   def columns_values
@@ -89,27 +85,34 @@ class Board
     board_values << diagonal2.join
     board_values.flatten
   end
-
-  def game_over?
-    if board_values.include?('XXX')
-      game_over_message('Congratulations player1 you won!!!')
-    elsif board_values.include?('OOO')
-      game_over_message('Congratulations player2 you won!!!')
-    elsif @board.join.length == (@rows * @columns)
-      game_over_message("Well done babes! it's a tie!!!")
-    end
-  end
 end
 
 class TicTacToeGame
-  def initialize(player_1, player_2)
-    @player_1 = Player.new(player_1, 'X')
-    @player_2 = Player.new(player_2, 'O')
+  def initialize(player1, player2)
+    @player1 = Player.new(player1, 'X')
+    @player2 = Player.new(player2, 'O')
     @board = Board.new(3, 3)
+    @game_over = false
   end
 
   def who_plays?
-    @player_1.times_played == @player_2.times_played ? @player_1 : @player_2
+    @player1.times_played == @player2.times_played ? @player1 : @player2
+  end
+
+  def game_over_message(message)
+    @game_over = true
+    @board.display_board
+    puts message
+  end
+
+  def game_over?
+    if @board.board_values.include?('XXX')
+      game_over_message("Congratulaions #{@player1.name} you won!!!")
+    elsif @board.board_values.include?('OOO')
+      game_over_message("Congratulations #{@player2.name} you won!!!")
+    elsif @board.board.join.length == (@board.rows * @board.columns)
+      game_over_message("Well done babes! it's a tie!!!")
+    end
   end
 
   def get_user_input(player)
@@ -122,11 +125,11 @@ class TicTacToeGame
   end
 
   def launch_game
-    until @board.game_over
+    until @game_over
       @board.display_board
       player = who_plays?
       player.play(@board.board, get_user_input(player.name))
-      @board.game_over?
+      game_over?
     end
   end
 end
