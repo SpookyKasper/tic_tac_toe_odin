@@ -1,5 +1,6 @@
 class Player
   attr_accessor :times_played
+  attr_reader :name
 
   def initialize(name, symbol)
     @name = name
@@ -8,13 +9,13 @@ class Player
   end
 
   def valid_input?(row, column)
-    (1..3).include?(row) && (1..3).include?(column)
+    (0..2).include?(row) && (0..2).include?(column)
   end
 
-  def play(board, row, column)
-    if valid_input?(row, column)
-      if board[row - 1][column - 1].nil?
-        board[row - 1][column - 1] = @symbol
+  def play(board, slot)
+    if valid_input?(slot[0], slot[1])
+      if board[slot[0]][slot[1]].nil?
+        board[slot[0]][slot[1]] = @symbol
         @times_played += 1
       else
         puts 'Sorry honey this slot is taken already...'
@@ -100,24 +101,35 @@ class Board
   end
 end
 
-player1 = Player.new('Player 1', 'X')
-player2 = Player.new('Player 2', 'O')
-tic_board = Board.new(3, 3)
-
-until tic_board.game_over
-  tic_board.display_board
-  if player1.times_played == player2.times_played
-    puts 'Hey Player1 which row do you wanna play ?'
-    row = gets.to_i
-    puts 'And on which column ?'
-    column = gets.to_i
-    player1.play(tic_board.board, row, column)
-  else
-    puts 'Hey Player2 which row do you wanna play ?'
-    row = gets.to_i
-    puts 'And on which column ?'
-    column = gets.to_i
-    player2.play(tic_board.board, row, column)
+class TicTacToeGame
+  def initialize(player_1, player_2)
+    @player_1 = Player.new(player_1, 'X')
+    @player_2 = Player.new(player_2, 'O')
+    @board = Board.new(3, 3)
   end
-  tic_board.game_over?
+
+  def who_plays?
+    @player_1.times_played == @player_2.times_played ? @player_1 : @player_2
+  end
+
+  def get_user_input(player)
+      choosen_slot = []
+      puts "Hey #{player} which row do you wann play?"
+      choosen_slot << gets.to_i - 1
+      puts 'And on wich column?'
+      choosen_slot << gets.to_i - 1
+      choosen_slot
+  end
+
+  def launch_game
+    until @board.game_over
+      @board.display_board
+      player = who_plays?
+      player.play(@board.board, get_user_input(player.name))
+      @board.game_over?
+    end
+  end
 end
+
+my_ttt = TicTacToeGame.new("Andrea", "Daniel")
+my_ttt.launch_game
