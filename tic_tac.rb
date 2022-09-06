@@ -1,6 +1,5 @@
 class Player
-  attr_accessor :times_played
-  attr_reader :name, :symbol
+  attr_reader :name, :symbol, :times_played
 
   def initialize(name, symbol)
     @name = name
@@ -8,23 +7,20 @@ class Player
     @times_played = 0
   end
 
-  def valid_input?(row, column)
-    (0..2).include?(row) && (0..2).include?(column)
+  def choose_slot
+    choosen_slot = []
+    puts "Hey #{@name} which row do you wann play?"
+    choosen_slot << gets.to_i - 1
+    puts 'And on wich column?'
+    choosen_slot << gets.to_i - 1
+    choosen_slot
   end
 
   def play(board, slot)
     row = slot[0]
     column = slot[1]
-    if valid_input?(row, column)
-      if board[row][column].nil?
-        board[row][column] = @symbol
-        @times_played += 1
-      else
-        puts 'Sorry honey this slot is taken already...'
-      end
-    else
-      puts 'Hoo darling, please type a number between 1 and 3...'
-    end
+    board[row][column] = @symbol
+    @times_played += 1
   end
 end
 
@@ -85,6 +81,12 @@ class Board
     board_values << diagonal2.join
     board_values.flatten
   end
+
+  def slot_free?(slot)
+    row = slot[0]
+    column = slot[1]
+    @board[row][column].nil?
+  end
 end
 
 class TicTacToeGame
@@ -97,6 +99,10 @@ class TicTacToeGame
 
   def who_plays?
     @player1.times_played == @player2.times_played ? @player1 : @player2
+  end
+
+  def valid_input?(slot)
+    (0..2).include?(slot[0]) && (0..2).include?(slot[1])
   end
 
   def game_over_message(message)
@@ -115,24 +121,28 @@ class TicTacToeGame
     end
   end
 
-  def get_user_input(player)
-      choosen_slot = []
-      puts "Hey #{player} which row do you wann play?"
-      choosen_slot << gets.to_i - 1
-      puts 'And on wich column?'
-      choosen_slot << gets.to_i - 1
-      choosen_slot
+  def slot_is_taken
+    puts 'Sorry babe slot is taken...'
+  end
+
+  def game_on
+    player = who_plays?
+    slot = player.choose_slot
+    if valid_input?(slot)
+      @board.slot_free?(slot) ? player.play(@board.board, slot) : slot_is_taken
+    else
+      puts 'Please input a number between 1 and 3 honey..'
+    end
   end
 
   def launch_game
     until @game_over
       @board.display_board
-      player = who_plays?
-      player.play(@board.board, get_user_input(player.name))
+      game_on
       game_over?
     end
   end
 end
 
-my_ttt = TicTacToeGame.new("Andrea", "Daniel")
+my_ttt = TicTacToeGame.new('Andrea', 'Daniel')
 my_ttt.launch_game
